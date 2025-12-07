@@ -1,3 +1,2 @@
 ﻿# IPK_calculator
-try trigger
-
+try trigger actions
