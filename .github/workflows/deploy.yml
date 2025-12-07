@@ -28,9 +28,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 4. Convert repository owner ke lowercase
+      # 4. Convert repository owner ke lowercase (PowerShell Windows)
       - name: Set lowercase owner
-        run: echo "OWNER=$(echo $GITHUB_REPOSITORY_OWNER | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        shell: powershell
+        run: |
+          $owner = "${{ github.repository_owner }}".ToLower()
+          Add-Content -Path $env:GITHUB_ENV -Value "OWNER=$owner"
 
       # 5. Build & Push Docker image
       - name: Build & Push image
@@ -70,16 +73,19 @@ jobs:
         run: |
           kubectl apply -f deploy/service.yaml -n ${KUBE_NAMESPACE:-dev} || true
           kubectl apply -f deploy/deployment.yaml -n ${KUBE_NAMESPACE:-dev} || true
-          if [ -f deploy/ingress.yaml ]; then kubectl apply -f deploy/ingress.yaml -n ${KUBE_NAMESPACE:-dev}; fi
+          if (Test-Path deploy/ingress.yaml) { kubectl apply -f deploy/ingress.yaml -n ${KUBE_NAMESPACE:-dev} }
+        shell: powershell
         env:
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
       # 9. Rollout image terbaru ke deployment
       - name: Rollout new image
         run: |
-          NAMESPACE=${KUBE_NAMESPACE:-dev}
-          NEW_TAG=${GITHUB_SHA}
-          kubectl set image deployment/ipk-calculator-deployment web=ghcr.io/${{ env.OWNER }}/ipk_calculator:${NEW_TAG} -n ${NAMESPACE}
-          kubectl rollout status deployment/ipk-calculator-deployment -n ${NAMESPACE}
+          $namespace = "${env:KUBE_NAMESPACE}" 
+          if (-not $namespace) { $namespace = "dev" }
+          $newTag = "${{ github.sha }}"
+          kubectl set image deployment/ipk-calculator-deployment web=ghcr.io/${{ env.OWNER }}/ipk_calculator:$newTag -n $namespace
+          kubectl rollout status deployment/ipk-calculator-deployment -n $namespace
+        shell: powershell
         env:
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
