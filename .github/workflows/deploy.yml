@@ -68,24 +68,27 @@ jobs:
           KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
-      # 8. Apply manifests (service, deployment, ingress)
+      # 8. Apply manifests (service, deployment, ingress) → PowerShell safe
       - name: Apply manifests
-        run: |
-          kubectl apply -f deploy/service.yaml -n ${KUBE_NAMESPACE:-dev} || true
-          kubectl apply -f deploy/deployment.yaml -n ${KUBE_NAMESPACE:-dev} || true
-          if (Test-Path deploy/ingress.yaml) { kubectl apply -f deploy/ingress.yaml -n ${KUBE_NAMESPACE:-dev} }
         shell: powershell
+        run: |
+          $namespace = $env:KUBE_NAMESPACE
+          if (-not $namespace) { $namespace = "dev" }
+
+          try { kubectl apply -f deploy/service.yaml -n $namespace -ErrorAction Stop } catch {}
+          try { kubectl apply -f deploy/deployment.yaml -n $namespace -ErrorAction Stop } catch {}
+          if (Test-Path "deploy/ingress.yaml") { try { kubectl apply -f deploy/ingress.yaml -n $namespace -ErrorAction Stop } catch {} }
         env:
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
       # 9. Rollout image terbaru ke deployment
       - name: Rollout new image
+        shell: powershell
         run: |
-          $namespace = "${env:KUBE_NAMESPACE}" 
+          $namespace = $env:KUBE_NAMESPACE
           if (-not $namespace) { $namespace = "dev" }
           $newTag = "${{ github.sha }}"
           kubectl set image deployment/ipk-calculator-deployment web=ghcr.io/${{ env.OWNER }}/ipk_calculator:$newTag -n $namespace
           kubectl rollout status deployment/ipk-calculator-deployment -n $namespace
-        shell: powershell
         env:
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
