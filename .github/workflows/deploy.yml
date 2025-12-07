@@ -69,19 +69,18 @@ jobs:
           KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
-      # 8. Apply manifests
-- name: Apply manifests
-  shell: powershell
-  run: |
-    $namespace = $env:KUBE_NAMESPACE
-    if (-not $namespace) { $namespace = "dev" }
+      # 8. Apply manifests (PowerShell safe + skip validation)
+      - name: Apply manifests
+        shell: powershell
+        run: |
+          $namespace = $env:KUBE_NAMESPACE
+          if (-not $namespace) { $namespace = "dev" }
 
-    try { kubectl apply -f deploy/service.yaml -n $namespace --validate=false } catch {}
-    try { kubectl apply -f deploy/deployment.yaml -n $namespace --validate=false } catch {}
-    if (Test-Path "deploy/ingress.yaml") { try { kubectl apply -f deploy/ingress.yaml -n $namespace --validate=false } catch {} }
-  env:
-    KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
-
+          try { kubectl apply -f deploy/service.yaml -n $namespace --validate=false } catch {}
+          try { kubectl apply -f deploy/deployment.yaml -n $namespace --validate=false } catch {}
+          if (Test-Path "deploy/ingress.yaml") { try { kubectl apply -f deploy/ingress.yaml -n $namespace --validate=false } catch {} }
+        env:
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
       # 9. Rollout image terbaru ke deployment
       - name: Rollout new image
