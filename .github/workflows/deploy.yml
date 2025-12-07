@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       # 1. Checkout kode
       - name: Checkout source
@@ -45,7 +45,7 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       # 6. Setup kubectl
       - name: Setup kubectl
