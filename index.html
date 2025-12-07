@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator IPK Sederhana</title>
+  <style>
+    :root {
+      --bg: #f4f5fb;
+      --card: #ffffff;
+      --accent: #2f6fed;
+      --text: #1b1e2d;
+      --muted: #6b7086;
+      --border: #e1e4ef;
+      --danger: #e24a4a;
+      --shadow: 0 12px 40px rgba(17, 38, 146, 0.08);
+      --radius: 14px;
+      --font: "Space Grotesk", "Segoe UI", sans-serif;
+    }
+
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap");
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: radial-gradient(circle at 20% 20%, #e8edff, #f6f7fb 50%);
+      color: var(--text);
+      padding: 32px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      width: min(1100px, 100%);
+      display: grid;
+      gap: 18px;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      body { padding: 18px; }
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f0f3ff;
+      color: var(--text);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th:nth-child(2), td:nth-child(2) { width: 90px; }
+    th:nth-child(3), td:nth-child(3) { width: 120px; }
+    th:nth-child(4), td:nth-child(4) { width: 80px; text-align: center; }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      background: #fdfdff;
+    }
+
+    input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.12s ease, opacity 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 14px;
+      box-shadow: 0 8px 22px rgba(47, 111, 237, 0.32);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      padding: 9px 12px;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); opacity: 0.92; }
+
+    .actions { display: flex; gap: 8px; }
+
+    .summary {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .pill {
+      padding: 14px;
+      border-radius: 12px;
+      background: #f7f8ff;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .pill small { color: var(--muted); font-weight: 500; }
+
+    .result {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .formula {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .grades {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .grade-box {
+      padding: 10px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      background: #fdfdff;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .note { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Kalkulator IPK</h1>
+      <p>Masukkan daftar mata kuliah, SKS, dan nilai huruf. IPK dihitung otomatis.</p>
+    </header>
+
+    <div class="layout">
+      <section class="card">
+        <div class="actions" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="font-weight: 600;">Data Mata Kuliah</div>
+          <div class="actions">
+            <button class="btn-ghost" id="reset">Reset</button>
+            <button class="btn-primary" id="add-row">Tambah Baris</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Nama Mata Kuliah</th>
+              <th>SKS</th>
+              <th>Nilai</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="courses-body"></tbody>
+        </table>
+        <p class="note">Tip: perubahan data langsung memperbarui IPK.</p>
+      </section>
+
+      <aside class="card" style="display: grid; gap: 12px;">
+        <div>
+          <div style="font-weight: 700; margin-bottom: 6px;">Hasil</div>
+          <div class="summary">
+            <div class="pill"><small>Total SKS</small><span id="total-sks">0</span></div>
+            <div class="pill"><small>Total Bobot</small><span id="total-bobot">0.00</span></div>
+          </div>
+          <div class="result">IPK <span id="gpa">0.00</span></div>
+        </div>
+        <div class="formula">
+          <div style="font-weight: 700;">Rumus</div>
+          <div>IPK = Σ(Bobot × SKS) / ΣSKS</div>
+          <div class="grades" id="grade-list"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const gradeMap = {
+      A: 4.00,
+      "A-": 3.75,
+      "B+": 3.50,
+      B: 3.00,
+      "B-": 2.75,
+      "C+": 2.50,
+      C: 2.00,
+      D: 1.00,
+      E: 0.00,
+    };
+
+    const tbody = document.getElementById("courses-body");
+    const addRowBtn = document.getElementById("add-row");
+    const resetBtn = document.getElementById("reset");
+    const totalSksEl = document.getElementById("total-sks");
+    const totalBobotEl = document.getElementById("total-bobot");
+    const gpaEl = document.getElementById("gpa");
+    const gradeList = document.getElementById("grade-list");
+
+    function createSelect(value = "A") {
+      const select = document.createElement("select");
+      Object.keys(gradeMap).forEach((grade) => {
+        const option = document.createElement("option");
+        option.value = grade;
+        option.textContent = grade;
+        if (grade === value) option.selected = true;
+        select.appendChild(option);
+      });
+      select.addEventListener("change", calculateGpa);
+      return select;
+    }
+
+    function createNumberInput(value = "") {
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "0.5";
+      input.placeholder = "3";
+      input.value = value;
+      input.addEventListener("input", calculateGpa);
+      return input;
+    }
+
+    function createTextInput(value = "") {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Nama mata kuliah";
+      input.value = value;
+      input.addEventListener("input", calculateGpa);
+      return input;
+    }
+
+    function addRow(data = { name: "", sks: "", grade: "A" }) {
+      const tr = document.createElement("tr");
+
+      const nameTd = document.createElement("td");
+      nameTd.appendChild(createTextInput(data.name));
+
+      const sksTd = document.createElement("td");
+      sksTd.appendChild(createNumberInput(data.sks));
+
+      const gradeTd = document.createElement("td");
+      gradeTd.appendChild(createSelect(data.grade));
+
+      const actionTd = document.createElement("td");
+      actionTd.style.textAlign = "center";
+      const del = document.createElement("button");
+      del.className = "btn-danger";
+      del.textContent = "Hapus";
+      del.onclick = () => {
+        tr.remove();
+        calculateGpa();
+      };
+      actionTd.appendChild(del);
+
+      tr.append(nameTd, sksTd, gradeTd, actionTd);
+      tbody.appendChild(tr);
+    }
+
+    function calculateGpa() {
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      let totalSks = 0;
+      let totalBobot = 0;
+
+      rows.forEach((row) => {
+        const [nameInput, sksInput, gradeSelect] = row.querySelectorAll("input, select");
+        const sks = parseFloat(sksInput.value) || 0;
+        const grade = gradeSelect.value;
+        const bobot = gradeMap[grade] ?? 0;
+        totalSks += sks;
+        totalBobot += bobot * sks;
+      });
+
+      const gpa = totalSks > 0 ? totalBobot / totalSks : 0;
+      totalSksEl.textContent = totalSks.toFixed(2).replace(/\.00$/, "");
+      totalBobotEl.textContent = totalBobot.toFixed(2);
+      gpaEl.textContent = gpa.toFixed(2);
+    }
+
+    function resetTable() {
+      tbody.innerHTML = "";
+      seedSample();
+      calculateGpa();
+    }
+
+    function seedSample() {
+      addRow({ name: "Basis Data", sks: "3", grade: "A" });
+      addRow({ name: "Jaringan Komputer", sks: "3", grade: "B+" });
+      addRow({ name: "Pemrograman", sks: "4", grade: "B" });
+    }
+
+    function renderGradeLegend() {
+      gradeList.innerHTML = "";
+      Object.entries(gradeMap).forEach(([grade, point]) => {
+        const box = document.createElement("div");
+        box.className = "grade-box";
+        box.innerHTML = `<span>${grade}</span><span>${point.toFixed(2)}</span>`;
+        gradeList.appendChild(box);
+      });
+    }
+
+    addRowBtn.addEventListener("click", () => addRow());
+    resetBtn.addEventListener("click", resetTable);
+
+    // Initial render
+    renderGradeLegend();
+    seedSample();
+    calculateGpa();
+  </script>
+</body>
+</html>
