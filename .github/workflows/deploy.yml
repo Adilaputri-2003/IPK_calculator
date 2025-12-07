@@ -58,6 +58,7 @@ jobs:
 
       # 7. Configure kube access
       - name: Configure kube access
+        shell: powershell
         run: |
           kubectl config set-cluster temp --server="${KUBE_SERVER}" --insecure-skip-tls-verify=true
           kubectl config set-credentials temp --token="${KUBE_TOKEN}"
@@ -68,16 +69,16 @@ jobs:
           KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
-      # 8. Apply manifests (service, deployment, ingress) → PowerShell safe
+      # 8. Apply manifests (PowerShell safe)
       - name: Apply manifests
         shell: powershell
         run: |
           $namespace = $env:KUBE_NAMESPACE
           if (-not $namespace) { $namespace = "dev" }
 
-          try { kubectl apply -f deploy/service.yaml -n $namespace -ErrorAction Stop } catch {}
-          try { kubectl apply -f deploy/deployment.yaml -n $namespace -ErrorAction Stop } catch {}
-          if (Test-Path "deploy/ingress.yaml") { try { kubectl apply -f deploy/ingress.yaml -n $namespace -ErrorAction Stop } catch {} }
+          try { kubectl apply -f deploy/service.yaml -n $namespace } catch {}
+          try { kubectl apply -f deploy/deployment.yaml -n $namespace } catch {}
+          if (Test-Path "deploy/ingress.yaml") { try { kubectl apply -f deploy/ingress.yaml -n $namespace } catch {} }
         env:
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
