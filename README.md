@@ -1,5 +1,6 @@
 ﻿# IPK_calculator
-try trigger actions for deploy udah stresss plis
+try trigger actions for deploy manifest
+
 
 
 
