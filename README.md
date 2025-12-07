@@ -1,3 +1,4 @@
 ﻿# IPK_calculator
-try trigger actions for deloy
+try trigger actions for deploy
+
 
